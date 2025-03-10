@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: expense-tracker
+  profiles:
+    active: dev
+  data:
+    mongodb:
+      host: ${MONGODB_HOST}
+      port: ${MONGODB_PORT}
+      database: ${MONGODB_DATABASE}
+      collection-name: ${MONGODB_COLLECTION_NAME}
+
+server:
+  port: ${SERVER_PORT}
+
+logging:
+  level:
+    root: INFO
+    com.example.expense_tracker: ${LOG_LEVEL}
+    org.springframework.data.mongodb: ${MONGODB_LOG_LEVEL} 

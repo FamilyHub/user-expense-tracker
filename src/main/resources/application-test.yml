@@ -1,0 +1,15 @@
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: expense_tracker_test
+      collection-name: transactions_test
+
+server:
+  port: 8082
+
+logging:
+  level:
+    com.example.expense_tracker: INFO
+    org.springframework.data.mongodb: INFO 
