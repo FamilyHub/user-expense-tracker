@@ -19,6 +19,7 @@ public class TransactionConverter {
         entity.setSenderName(dto.getSenderName());
         entity.setReason(dto.getReason());
         entity.setAmount(dto.getAmount());
+        entity.setAmountIn(dto.isAmountIn());
         entity.setOrgId(dto.getOrgId());
         entity.setUpdates(dto.getUpdates());
         return entity;
@@ -36,6 +37,7 @@ public class TransactionConverter {
         dto.setSenderName(entity.getSenderName());
         dto.setReason(entity.getReason());
         dto.setAmount(entity.getAmount());
+        dto.setAmountIn(entity.isAmountIn());
         dto.setOrgId(entity.getOrgId());
         dto.setUpdates(entity.getUpdates());
         return dto;

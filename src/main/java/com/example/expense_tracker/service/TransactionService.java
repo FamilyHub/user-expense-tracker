@@ -9,4 +9,12 @@ public interface TransactionService {
     List<TransactionDTO> getAllTransactions();
     TransactionDTO updateTransaction(String id, TransactionDTO transactionDTO);
     void deleteTransaction(String id);
+    
+    // Financial calculation methods
+    double getTotalCashIn(String startDate, String endDate);
+    double getTotalCashOut(String startDate, String endDate);
+    double fetchBalanceForPeriod(String startDate, String endDate);
+    
+    // Transaction fetching by date range
+    List<TransactionDTO> getTransactionsByDateRange(String startDate, String endDate);
 } 

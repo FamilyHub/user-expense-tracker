@@ -4,7 +4,9 @@ spring:
       host: localhost
       port: 27017
       database: expense_tracker_dev
-      collection-name: transactions_dev
+      collection:
+        transaction: transactions_dev
+        event: events_dev
 
 server:
   port: 8081
