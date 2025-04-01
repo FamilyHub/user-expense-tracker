@@ -2,6 +2,7 @@ package com.example.expense_tracker.service;
 
 import com.example.expense_tracker.dto.AddEventRequestDTO;
 import com.example.expense_tracker.dto.AddEventResponseDTO;
+import com.example.expense_tracker.model.BulkEventResponse;
 import com.example.expense_tracker.model.EventPartialUpdate;
 import java.util.List;
 
@@ -14,4 +15,5 @@ public interface AddEventService {
     void deleteEvent(String eventId);
     List<AddEventResponseDTO> getEventsByDateWise(String startDate , String endDate);
     AddEventResponseDTO updateEventStatus(String eventId, boolean status);
+    BulkEventResponse bulkDeleteEvents(List<String> eventIds);
 } 

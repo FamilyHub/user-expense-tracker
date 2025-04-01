@@ -38,6 +38,13 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getAllTransactions());
     }
 
+    @GetMapping("/by-category")
+    public ResponseEntity<List<TransactionDTO>> getTransactionsByCategory(
+            @RequestHeader("Authorization") String authorization,
+            @RequestParam String category) {
+        return ResponseEntity.ok(transactionService.getTransactionsByCategory(category));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<TransactionDTO> updateTransaction(
             @RequestHeader("Authorization") String authorization,

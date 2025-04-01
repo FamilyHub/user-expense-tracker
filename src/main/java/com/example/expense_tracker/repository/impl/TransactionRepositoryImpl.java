@@ -34,12 +34,20 @@ public class TransactionRepositoryImpl implements TransactionRepository {
 
     @Override
     public Optional<Transaction> findById(String id) {
-        Transaction transaction = mongoTemplate.findById(id, Transaction.class, mongoProperties.getEventCollectionName());
+        Transaction transaction = mongoTemplate.findById(id, Transaction.class, mongoProperties.getTransactionCollectionName());
         return Optional.ofNullable(transaction);
     }
 
     @Override
     public void deleteById(String id) {
-        mongoTemplate.remove(Query.query(Criteria.where("_id").is(id)), mongoProperties.getTransactionCollectionName());
+        Query query = new Query(Criteria.where("_id").is(id));
+        mongoTemplate.remove(query, Transaction.class, mongoProperties.getTransactionCollectionName());
     }
+
+    @Override
+    public List<Transaction> findByCategory(String category) {
+        Query query = new Query(Criteria.where("category").is(category));
+        return mongoTemplate.find(query, Transaction.class, mongoProperties.getTransactionCollectionName());
+    }
+
 }

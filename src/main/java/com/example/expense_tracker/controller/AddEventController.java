@@ -2,6 +2,7 @@ package com.example.expense_tracker.controller;
 
 import com.example.expense_tracker.dto.AddEventRequestDTO;
 import com.example.expense_tracker.dto.AddEventResponseDTO;
+import com.example.expense_tracker.model.BulkEventResponse;
 import com.example.expense_tracker.model.EventPartialUpdate;
 import com.example.expense_tracker.service.AddEventService;
 import org.springframework.http.ResponseEntity;
@@ -78,5 +79,13 @@ public class AddEventController {
         AddEventResponseDTO updatedEvent = addEventService.updateEventStatus(eventId, status);
         return ResponseEntity.ok(updatedEvent);
     }
+
+    @DeleteMapping("/bulk")
+    public ResponseEntity<BulkEventResponse> bulkDeleteEvents(@RequestBody List<String> eventIds) {
+        BulkEventResponse response = addEventService.bulkDeleteEvents(eventIds);
+        return ResponseEntity.ok(response);
+    }
+    
+    
 
 } 

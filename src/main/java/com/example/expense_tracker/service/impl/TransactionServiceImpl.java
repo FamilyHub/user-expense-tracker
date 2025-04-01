@@ -2,12 +2,14 @@ package com.example.expense_tracker.service.impl;
 
 import com.example.expense_tracker.converter.TransactionConverter;
 import com.example.expense_tracker.dto.TransactionDTO;
+import com.example.expense_tracker.exception.InvalidTransactionDataException;
 import com.example.expense_tracker.model.CustomField;
 import com.example.expense_tracker.model.Transaction;
 import com.example.expense_tracker.repository.TransactionRepository;
 import com.example.expense_tracker.service.TransactionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -141,6 +143,22 @@ public class TransactionServiceImpl implements TransactionService {
                 })
                 .map(transactionConverter::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TransactionDTO> getTransactionsByCategory(String category) {
+        if (!StringUtils.hasText(category)) {
+            throw new InvalidTransactionDataException("Category cannot be empty");
+        }
+
+        try {
+            List<Transaction> transactions = transactionRepository.findByCategory(category);
+            return transactions.stream()
+                    .map(transactionConverter::toDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new InvalidTransactionDataException("Failed to fetch transactions by category: " + e.getMessage());
+        }
     }
 
     private CustomField getLastActivityField(Transaction transaction) {
