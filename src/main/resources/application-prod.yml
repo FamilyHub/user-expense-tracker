@@ -6,7 +6,9 @@ spring:
       database: ${MONGODB_DATABASE}
       username: ${MONGODB_USERNAME}
       password: ${MONGODB_PASSWORD}
-      collection-name: ${MONGODB_COLLECTION_NAME}
+      collection:
+        transaction: ${MONGODB_TRANSACTION_COLLECTION}
+        event: ${MONGODB_EVENT_COLLECTION}
 
 server:
   port: ${SERVER_PORT}

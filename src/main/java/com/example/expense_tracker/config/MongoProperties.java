@@ -13,14 +13,36 @@ public class MongoProperties {
     private String database;
     private String username;
     private String password;
-    private String collectionName;
+    private CollectionProperties collection = new CollectionProperties();
 
-    public String getDatabase() {
-        return database;
+    @Data
+    public static class CollectionProperties {
+        private String transaction;
+        private String event;
+
+        public String getTransaction() {
+            return transaction;
+        }
+
+        public void setTransaction(String transaction) {
+            this.transaction = transaction;
+        }
+
+        public String getEvent() {
+            return event;
+        }
+
+        public void setEvent(String event) {
+            this.event = event;
+        }
     }
 
-    public void setDatabase(String database) {
-        this.database = database;
+    public String getTransactionCollectionName() {
+        return collection.getTransaction();
+    }
+
+    public String getEventCollectionName() {
+        return collection.getEvent();
     }
 
     public CollectionProperties getCollection() {
@@ -29,6 +51,14 @@ public class MongoProperties {
 
     public void setCollection(CollectionProperties collection) {
         this.collection = collection;
+    }
+
+    public String getDatabase() {
+        return database;
+    }
+
+    public void setDatabase(String database) {
+        this.database = database;
     }
 
     public String getHost() {
@@ -61,12 +91,5 @@ public class MongoProperties {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    private CollectionProperties collection = new CollectionProperties();
-
-    @Data
-    public static class CollectionProperties {
-        private String transaction;
     }
 } 

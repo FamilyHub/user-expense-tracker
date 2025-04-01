@@ -23,6 +23,7 @@ public class Transaction {
     private String senderName;
     private String reason;
     private double amount;
+    private boolean amountIn;
     private String orgId;
     private List<Changes> updates;
 
@@ -96,5 +97,13 @@ public class Transaction {
 
     public void setUpdates(List<Changes> updates) {
         this.updates = updates;
+    }
+
+    public boolean isAmountIn() {
+        return amountIn;
+    }
+
+    public void setAmountIn(boolean amountIn) {
+        this.amountIn = amountIn;
     }
 }

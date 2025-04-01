@@ -1,4 +1,4 @@
-package com.example.expense_tracker.service.impl;
+package com.example.expense_tracker.repository.impl;
 
 import com.example.expense_tracker.config.MongoProperties;
 import com.example.expense_tracker.model.Transaction;
@@ -24,22 +24,22 @@ public class TransactionRepositoryImpl implements TransactionRepository {
 
     @Override
     public Transaction save(Transaction transaction) {
-        return mongoTemplate.save(transaction, mongoProperties.getCollectionName());
+        return mongoTemplate.save(transaction, mongoProperties.getTransactionCollectionName());
     }
 
     @Override
     public List<Transaction> findAll() {
-        return mongoTemplate.findAll(Transaction.class, mongoProperties.getCollectionName());
+        return mongoTemplate.findAll(Transaction.class, mongoProperties.getTransactionCollectionName());
     }
 
     @Override
     public Optional<Transaction> findById(String id) {
-        Transaction transaction = mongoTemplate.findById(id, Transaction.class, mongoProperties.getCollectionName());
+        Transaction transaction = mongoTemplate.findById(id, Transaction.class, mongoProperties.getEventCollectionName());
         return Optional.ofNullable(transaction);
     }
 
     @Override
     public void deleteById(String id) {
-        mongoTemplate.remove(Query.query(Criteria.where("_id").is(id)), mongoProperties.getCollectionName());
+        mongoTemplate.remove(Query.query(Criteria.where("_id").is(id)), mongoProperties.getTransactionCollectionName());
     }
 }

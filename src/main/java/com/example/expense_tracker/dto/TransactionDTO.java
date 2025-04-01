@@ -3,16 +3,25 @@ package com.example.expense_tracker.dto;
 import com.example.expense_tracker.model.CustomField;
 import com.example.expense_tracker.model.Changes;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Data
+
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionDTO {
     private String transactionId;
+    private String category;
+    private List<CustomField> customFields;
+    private String receiverName;
+    private String senderName;
+    private String reason;
+    private double amount;
+    private String orgId;
+    private List<Changes> updates;
+    private boolean amountIn;
+
 
     public double getAmount() {
         return amount;
@@ -20,6 +29,14 @@ public class TransactionDTO {
 
     public void setAmount(double amount) {
         this.amount = amount;
+    }
+
+    public boolean isAmountIn() {
+        return amountIn;
+    }
+
+    public void setAmountIn(boolean amountIn) {
+        this.amountIn = amountIn;
     }
 
     public String getCategory() {
@@ -85,13 +102,4 @@ public class TransactionDTO {
     public void setUpdates(List<Changes> updates) {
         this.updates = updates;
     }
-
-    private String category;
-    private List<CustomField> customFields;
-    private String receiverName;
-    private String senderName;
-    private String reason;
-    private double amount;
-    private String orgId;
-    private List<Changes> updates;
-} 
+}
