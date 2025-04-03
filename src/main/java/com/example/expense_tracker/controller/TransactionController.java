@@ -1,5 +1,6 @@
 package com.example.expense_tracker.controller;
 
+import com.example.expense_tracker.dto.CategoryPercentageDTO;
 import com.example.expense_tracker.dto.TransactionDTO;
 import com.example.expense_tracker.service.TransactionService;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,13 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getAllTransactions());
     }
 
+    @GetMapping("/by-category")
+    public ResponseEntity<List<TransactionDTO>> getTransactionsByCategory(
+            @RequestHeader("Authorization") String authorization,
+            @RequestParam String category) {
+        return ResponseEntity.ok(transactionService.getTransactionsByCategory(category));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<TransactionDTO> updateTransaction(
             @RequestHeader("Authorization") String authorization,
@@ -52,5 +60,22 @@ public class TransactionController {
             @PathVariable String id) {
         transactionService.deleteTransaction(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/category/top-expensive")
+    public ResponseEntity<String> topExpensedCategory(
+            @RequestHeader("Authorization") String authorization,
+            @RequestParam String startDate,
+            @RequestParam String endDate
+    ) {
+        return new ResponseEntity<>(transactionService.topExpensedCategory(startDate, endDate), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/category-percentage")
+    public ResponseEntity<List<CategoryPercentageDTO>> fetchCategoryPercentage(
+            @RequestHeader("Authorization") String authorization,
+            @RequestParam String startDate,
+            @RequestParam String endDate) {
+        return ResponseEntity.ok(transactionService.fetchCategoryPercentage(startDate, endDate));
     }
 } 

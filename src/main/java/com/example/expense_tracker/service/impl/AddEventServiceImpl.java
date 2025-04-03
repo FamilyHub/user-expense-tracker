@@ -3,11 +3,14 @@ package com.example.expense_tracker.service.impl;
 import com.example.expense_tracker.converter.AddEventConverter;
 import com.example.expense_tracker.dto.AddEventRequestDTO;
 import com.example.expense_tracker.dto.AddEventResponseDTO;
+import com.example.expense_tracker.dto.EventStatusResponseDTO;
 import com.example.expense_tracker.exception.EventNotFoundException;
 import com.example.expense_tracker.exception.InvalidEventDataException;
 import com.example.expense_tracker.model.AddEvent;
+import com.example.expense_tracker.model.BulkEventResponse;
 import com.example.expense_tracker.model.CustomField;
 import com.example.expense_tracker.model.EventPartialUpdate;
+import com.example.expense_tracker.model.ResourceInfo;
 import com.example.expense_tracker.repository.AddEventRepository;
 import com.example.expense_tracker.service.AddEventService;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -112,13 +115,43 @@ public class AddEventServiceImpl implements AddEventService {
     }
 
     @Override
-    public List<AddEventResponseDTO> getEventsByDateWise(String startDate , String endDate) {
+    public List<AddEventResponseDTO> getEventsByDateWise(String startDate, String endDate) {
         try {
-             List<AddEventResponseDTO> allEvents =  addEventRepository.findAll().stream()
+            // Convert string dates to long timestamps
+            long startTimestamp = Long.parseLong(startDate);
+            long endTimestamp = Long.parseLong(endDate);
+
+            // Validate timestamps
+            if (startTimestamp > endTimestamp) {
+                throw new InvalidEventDataException("Start date cannot be after end date");
+            }
+
+            // Get all events and filter based on eventTime in customFields
+            return addEventRepository.findAll().stream()
+                    .filter(event -> {
+                        if (event.getCustomFields() == null) {
+                            return false;
+                        }
+                        
+                        // Find eventTime field
+                        return event.getCustomFields().stream()
+                                .filter(field -> "eventTime".equals(field.getFieldKey()))
+                                .findFirst()
+                                .map(field -> {
+                                    try {
+                                        long eventTime = Long.parseLong(field.getFieldValue());
+                                        return eventTime >= startTimestamp && eventTime <= endTimestamp;
+                                    } catch (NumberFormatException e) {
+                                        return false;
+                                    }
+                                })
+                                .orElse(false);
+                    })
                     .map(addEventConverter::toResponseDTO)
                     .collect(Collectors.toList());
-             return allEvents;
 
+        } catch (NumberFormatException e) {
+            throw new InvalidEventDataException("Invalid date format. Please provide dates as epoch timestamps");
         } catch (Exception e) {
             throw new InvalidEventDataException("Failed to fetch events: " + e.getMessage());
         }
@@ -202,6 +235,98 @@ public class AddEventServiceImpl implements AddEventService {
             throw e;
         } catch (Exception e) {
             throw new InvalidEventDataException("Failed to update event status: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public BulkEventResponse bulkDeleteEvents(List<String> eventIds) {
+        List<AddEvent> successList = new ArrayList<>();
+        List<ResourceInfo> failureList = new ArrayList<>();
+
+        for (String eventId : eventIds) {
+            try {
+                validateEventId(eventId);
+                
+                // Find the event
+                AddEvent event = addEventRepository.findById(eventId)
+                        .orElse(null);
+                
+                if (event == null) {
+                    // Add to failure list if event not found
+                    ResourceInfo resourceInfo = new ResourceInfo();
+                    resourceInfo.setEventId(eventId);
+                    resourceInfo.setEventName("Unknown");
+                    resourceInfo.setFailureReason("Event not found");
+                    failureList.add(resourceInfo);
+                    continue;
+                }
+
+                // Delete the event
+                addEventRepository.deleteById(eventId);
+                successList.add(event);
+
+            } catch (Exception e) {
+                // Add to failure list if deletion fails
+                ResourceInfo resourceInfo = new ResourceInfo();
+                resourceInfo.setEventId(eventId);
+                resourceInfo.setEventName("Unknown");
+                resourceInfo.setFailureReason("Failed to delete event: " + e.getMessage());
+                failureList.add(resourceInfo);
+            }
+        }
+
+        return new BulkEventResponse(successList, failureList);
+    }
+
+    @Override
+    public List<AddEventResponseDTO> fetchAllPendingEvents(String startDate, String endDate) {
+
+        List<AddEventResponseDTO> addEventResponseDTOS = getAllEvents();
+
+        List<AddEventResponseDTO> res = new ArrayList<>();
+
+        for(AddEventResponseDTO eventResponseDTO : addEventResponseDTOS) {
+
+            if(!eventResponseDTO.isEventCompleted()){
+                res.add(eventResponseDTO);
+            }
+        }
+
+        return  res;
+    }
+
+    @Override
+    public EventStatusResponseDTO getEventStatus(String startDate, String endDate) throws InvalidEventDataException {
+        try {
+            // Convert string dates to long timestamps
+            long startTimestamp = Long.parseLong(startDate);
+            long endTimestamp = Long.parseLong(endDate);
+
+            // Validate timestamps
+            if (startTimestamp > endTimestamp) {
+                throw new InvalidEventDataException("Start date cannot be after end date");
+            }
+
+            // Get all events within date range
+            List<AddEventResponseDTO> events = getEventsByDateWise(startDate, endDate);
+
+            // Separate completed and pending events
+            List<String> completedEventIds = events.stream()
+                    .filter(AddEventResponseDTO::isEventCompleted)
+                    .map(AddEventResponseDTO::getEventId)
+                    .collect(Collectors.toList());
+
+            List<String> pendingEventIds = events.stream()
+                    .filter(event -> !event.isEventCompleted())
+                    .map(AddEventResponseDTO::getEventId)
+                    .collect(Collectors.toList());
+
+            return new EventStatusResponseDTO(completedEventIds, pendingEventIds);
+
+        } catch (NumberFormatException e) {
+            throw new InvalidEventDataException("Invalid date format. Please provide dates as epoch timestamps");
+        } catch (Exception e) {
+            throw new InvalidEventDataException("Failed to fetch event status: " + e.getMessage());
         }
     }
 
