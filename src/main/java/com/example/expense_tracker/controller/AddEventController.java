@@ -2,6 +2,7 @@ package com.example.expense_tracker.controller;
 
 import com.example.expense_tracker.dto.AddEventRequestDTO;
 import com.example.expense_tracker.dto.AddEventResponseDTO;
+import com.example.expense_tracker.dto.EventStatusResponseDTO;
 import com.example.expense_tracker.model.BulkEventResponse;
 import com.example.expense_tracker.model.EventPartialUpdate;
 import com.example.expense_tracker.service.AddEventService;
@@ -86,6 +87,19 @@ public class AddEventController {
         return ResponseEntity.ok(response);
     }
     
-    
+    @GetMapping("/pending-events")
+    public List<AddEventResponseDTO> fetchAllPendingEvents(
+            @RequestHeader("Authorization") String authorization,
+            @RequestParam String startDate,
+            @RequestParam String endDate
+    ){
+        return addEventService.fetchAllPendingEvents(startDate,endDate);
+    }
 
+    @GetMapping("/status")
+    public ResponseEntity<EventStatusResponseDTO> getEventStatus(
+            @RequestParam String startDate,
+            @RequestParam String endDate) {
+        return ResponseEntity.ok(addEventService.getEventStatus(startDate, endDate));
+    }
 } 

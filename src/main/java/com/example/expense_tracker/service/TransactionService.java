@@ -1,5 +1,6 @@
 package com.example.expense_tracker.service;
 
+import com.example.expense_tracker.dto.CategoryPercentageDTO;
 import com.example.expense_tracker.dto.TransactionDTO;
 import java.util.List;
 
@@ -18,4 +19,8 @@ public interface TransactionService {
     
     // Transaction fetching by date range
     List<TransactionDTO> getTransactionsByDateRange(String startDate, String endDate);
+
+    String topExpensedCategory(String startDate, String endDate);
+
+    List<CategoryPercentageDTO> fetchCategoryPercentage(String startDate, String endDate);
 } 

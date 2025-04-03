@@ -1,6 +1,7 @@
 package com.example.expense_tracker.service.impl;
 
 import com.example.expense_tracker.converter.TransactionConverter;
+import com.example.expense_tracker.dto.CategoryPercentageDTO;
 import com.example.expense_tracker.dto.TransactionDTO;
 import com.example.expense_tracker.exception.InvalidTransactionDataException;
 import com.example.expense_tracker.model.CustomField;
@@ -11,8 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -146,6 +149,39 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    public String topExpensedCategory(String startDate, String endDate) {
+
+        List<TransactionDTO> transactionDTOList = getTransactionsByDateRange(startDate, endDate);
+
+        Map<String, Double> categoryExpenseMap = new HashMap<>();
+
+        // Iterate through transactions and sum expenses by category
+        for (TransactionDTO transaction : transactionDTOList) {
+            // Check if transaction is an expenditure (amountIn = false)
+            if (!transaction.isAmountIn()) {
+                String category = transaction.getCategory();
+                double amount = transaction.getAmount();
+
+                // Update the expense amount for this category
+                categoryExpenseMap.put(category,
+                        categoryExpenseMap.getOrDefault(category, 0.0) + amount);
+            }
+        }
+
+        // Find the category with the highest expense amount
+        String topCategory = "";
+        double maxExpense = 0.0;
+
+        for (Map.Entry<String, Double> entry : categoryExpenseMap.entrySet()) {
+            if (entry.getValue() > maxExpense) {
+                maxExpense = entry.getValue();
+                topCategory = entry.getKey();
+            }
+        }
+
+        return topCategory;
+    }
+    @Override
     public List<TransactionDTO> getTransactionsByCategory(String category) {
         if (!StringUtils.hasText(category)) {
             throw new InvalidTransactionDataException("Category cannot be empty");
@@ -158,6 +194,60 @@ public class TransactionServiceImpl implements TransactionService {
                     .collect(Collectors.toList());
         } catch (Exception e) {
             throw new InvalidTransactionDataException("Failed to fetch transactions by category: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public List<CategoryPercentageDTO> fetchCategoryPercentage(String startDate, String endDate) {
+        try {
+            // Convert string dates to long timestamps
+            long startTimestamp = Long.parseLong(startDate);
+            long endTimestamp = Long.parseLong(endDate);
+
+            // Validate timestamps
+            if (startTimestamp > endTimestamp) {
+                throw new InvalidTransactionDataException("Start date cannot be after end date");
+            }
+
+            // Get all transactions within date range
+            List<Transaction> transactions = transactionRepository.findAll().stream()
+                    .filter(transaction -> {
+                        // Check if transaction is within date range and is an expenditure
+                        CustomField transactionDateField = getTranscationField(transaction);
+                        if (transactionDateField == null) return false;
+                        
+                        long transactionDate = Long.parseLong(transactionDateField.getFieldValue());
+                        return transactionDate >= startTimestamp && 
+                               transactionDate <= endTimestamp && 
+                               !transaction.isAmountIn();
+                    })
+                    .collect(Collectors.toList());
+
+            // Calculate total expenditure
+            double totalExpenditure = transactions.stream()
+                    .mapToDouble(Transaction::getAmount)
+                    .sum();
+
+            // Group by category and calculate percentages
+            Map<String, Double> categoryAmounts = transactions.stream()
+                    .collect(Collectors.groupingBy(
+                            Transaction::getCategory,
+                            Collectors.summingDouble(Transaction::getAmount)
+                    ));
+
+            // Convert to CategoryPercentageDTO list
+            return categoryAmounts.entrySet().stream()
+                    .map(entry -> {
+                        double amount = entry.getValue();
+                        double percentage = (amount / totalExpenditure) * 100;
+                        return new CategoryPercentageDTO(entry.getKey(), amount, percentage);
+                    })
+                    .collect(Collectors.toList());
+
+        } catch (NumberFormatException e) {
+            throw new InvalidTransactionDataException("Invalid date format. Please provide dates as epoch timestamps");
+        } catch (Exception e) {
+            throw new InvalidTransactionDataException("Failed to fetch category percentages: " + e.getMessage());
         }
     }
 
