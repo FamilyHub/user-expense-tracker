@@ -5,10 +5,7 @@ spring:
     active: dev
   data:
     mongodb:
-      host: ${MONGODB_HOST}
-      port: ${MONGODB_PORT}
-      database: ${MONGODB_DATABASE}
-      collection-name: ${MONGODB_COLLECTION_NAME}
+      uri: mongodb://localhost:27017/familyHub
 
 server:
   port: ${SERVER_PORT}
@@ -18,3 +15,23 @@ logging:
     root: INFO
     com.example.expense_tracker: ${LOG_LEVEL}
     org.springframework.data.mongodb: ${MONGODB_LOG_LEVEL} 
+
+# Eureka Client Configuration
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8070/eureka/
+    registerWithEureka: true
+    fetchRegistry: true
+  instance:
+    preferIpAddress: true
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always 
